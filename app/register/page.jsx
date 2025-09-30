@@ -5,10 +5,33 @@ import { Eye, EyeOff } from "lucide-react";
 export default function RegisterPage() {
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Registering:", form);
+    setLoading(true);
+    setMessage("");
+
+    try {
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setMessage("✅ Registration successful! Please login.");
+      } else {
+        setMessage(`❌ ${data.error || "Something went wrong"}`);
+      }
+    } catch (error) {
+      setMessage("❌ Network error, try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -22,10 +45,7 @@ export default function RegisterPage() {
         </h1>
 
         {/* Full Name */}
-        <label
-          htmlFor="name"
-          className="block text-sm font-semibold text-gray-700 mb-1"
-        >
+        <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-1">
           Full Name
         </label>
         <input
@@ -35,13 +55,11 @@ export default function RegisterPage() {
           onChange={(e) => setForm({ ...form, name: e.target.value })}
           className="w-full px-4 py-3 mb-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 font-medium"
           placeholder="John Doe"
+          required
         />
 
         {/* Email */}
-        <label
-          htmlFor="email"
-          className="block text-sm font-semibold text-gray-700 mb-1"
-        >
+        <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-1">
           Email
         </label>
         <input
@@ -51,13 +69,11 @@ export default function RegisterPage() {
           onChange={(e) => setForm({ ...form, email: e.target.value })}
           className="w-full px-4 py-3 mb-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 font-medium"
           placeholder="example@email.com"
+          required
         />
 
         {/* Password */}
-        <label
-          htmlFor="password"
-          className="block text-sm font-semibold text-gray-700 mb-1"
-        >
+        <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-1">
           Password
         </label>
         <div className="relative mb-6">
@@ -68,6 +84,7 @@ export default function RegisterPage() {
             onChange={(e) => setForm({ ...form, password: e.target.value })}
             className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 font-medium"
             placeholder="Enter your password"
+            required
           />
           <button
             type="button"
@@ -80,17 +97,21 @@ export default function RegisterPage() {
 
         <button
           type="submit"
+          disabled={loading}
           className="w-full bg-indigo-600 text-white p-3 rounded-lg hover:bg-indigo-700 transition font-bold shadow-md"
         >
-          Sign Up
+          {loading ? "Registering..." : "Sign Up"}
         </button>
+
+        {message && (
+          <p className="text-center mt-4 text-sm font-medium text-gray-700">
+            {message}
+          </p>
+        )}
 
         <p className="text-sm text-center mt-4 text-gray-700 font-medium">
           Already have an account?{" "}
-          <a
-            href="/login"
-            className="text-indigo-600 font-semibold hover:underline"
-          >
+          <a href="/login" className="text-indigo-600 font-semibold hover:underline">
             Login
           </a>
         </p>
